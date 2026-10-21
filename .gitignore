@@ -1,0 +1,14 @@
+node_modules/
+supabase/.temp/
+supabase/.branches/
+mobile/.dart_tool/
+mobile/build/
+mobile/.flutter-plugins*
+mobile/config.local.json
+mobile/config.ci.json
+mobile/.metadata
+.env
+*.ipa
+*.p8
+*.p12
+.DS_Store

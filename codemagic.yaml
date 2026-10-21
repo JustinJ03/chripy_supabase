@@ -1,0 +1,46 @@
+workflows:
+  chripy-ios:
+    name: Chripy - local Supabase iPhone build
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+    environment:
+      flutter: stable
+      xcode: latest
+      groups:
+        - chripy
+    scripts:
+      - name: Verify generated platform files
+        script: test -f mobile/ios/Runner/Info.plist
+      - name: Resolve locked dependencies
+        script: |
+          cd mobile
+          flutter pub get --enforce-lockfile
+      - name: Analyze and test
+        script: |
+          cd mobile
+          flutter analyze
+          flutter test
+      - name: Create build configuration
+        script: |
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          values = {k: os.environ[k] for k in ['SUPABASE_URL','SUPABASE_PUBLISHABLE_KEY']}
+          assert all(values.values()), 'Set both variables in the chripy environment group'
+          Path('mobile/config.ci.json').write_text(json.dumps(values))
+          PY
+      - name: Compile unsigned iPhone release
+        script: |
+          cd mobile
+          flutter build ios --release --no-codesign --dart-define-from-file=config.ci.json
+      - name: Package for Sideloadly
+        script: |
+          set -euo pipefail
+          test -d mobile/build/ios/iphoneos/Runner.app
+          CHRIPY_STAGE="$(mktemp -d)"
+          mkdir -p "$CHRIPY_STAGE/Payload"
+          cp -R mobile/build/ios/iphoneos/Runner.app "$CHRIPY_STAGE/Payload/"
+          cd "$CHRIPY_STAGE"
+          /usr/bin/zip -q -r -y "$CM_BUILD_DIR/chripy-unsigned.ipa" Payload
+    artifacts:
+      - chripy-unsigned.ipa

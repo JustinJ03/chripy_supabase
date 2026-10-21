@@ -1,0 +1,13 @@
+{
+  "name": "chripy-local-tools",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Local Supabase tools and bootstrap scripts for Chripy",
+  "scripts": {
+    "setup": "node scripts/setup.mjs",
+    "backend:start": "supabase start",
+    "backend:stop": "supabase stop",
+    "backend:status": "supabase status"
+  },
+  "devDependencies": { "supabase": "^2.50.0" }
+}

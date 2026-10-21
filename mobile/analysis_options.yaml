@@ -1,0 +1,6 @@
+# Keep Dart's standard analyzer checks; no additional lint-package dependency.
+analyzer:
+  exclude:
+    - build/**
+    - ios/**
+    - web/**
