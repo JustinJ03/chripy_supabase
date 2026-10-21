@@ -1,5 +1,22 @@
 # Validation record — 20 October 2026
 
+## Documentation checks — 21 October 2026
+
+- Formatted all seven handwritten Dart source/test files after adding explanatory
+  comments; `flutter analyze` reported no issues and all 11 tests passed.
+- Compared parsed Dart token streams with the pre-comment backup: every executable
+  token is unchanged in all seven files.
+- Both Node helpers passed `node --check`; stripping whole-line comments confirms
+  their executable source is unchanged.
+- Stripping comments confirms both SQL files and the email-template HTML are
+  unchanged. No migration was applied and no database operation was needed.
+- Parsed `codemagic.yaml` and compared its configuration and scripts with the
+  backup, excluding the new comments: unchanged.
+- Checked local file links, heading links, and balanced code fences in the new
+  README and preserved tutorial.
+- Dependency manifests, lockfiles, backend configuration, and generated platform
+  files were not edited by this documentation update.
+
 ## Local Windows checks — 20 October 2026
 
 - Flutter 3.47.7 stable / bundled Dart 3.13.5.

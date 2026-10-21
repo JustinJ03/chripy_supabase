@@ -1,46 +1,91 @@
+# Define the workflows Codemagic can run from this repository.
 workflows:
+  # Select this workflow to build the physical-iPhone development package.
   chripy-ios:
+    # Show this readable label in Codemagic's build list.
     name: Chripy - local Supabase iPhone build
+    # Use a macOS host because iOS compilation requires Xcode.
     instance_type: mac_mini_m2
+    # Stop a build that exceeds sixty minutes.
     max_build_duration: 60
+    # Choose the build toolchain and environment-variable groups.
     environment:
+      # Resolve the stable Flutter channel; align it with the tested local version when pinning CI.
       flutter: stable
+      # Use the latest Xcode image supplied by this runner.
       xcode: latest
+      # Load the two client configuration values from a named Codemagic group.
       groups:
+        # Create this group with SUPABASE_URL and SUPABASE_PUBLISHABLE_KEY.
         - chripy
+    # Execute these steps in order; validation happens before compilation.
     scripts:
+      # Require the generated iOS project to be included in the checkout.
       - name: Verify generated platform files
+        # Fail early when setup/platform files were not committed.
         script: test -f mobile/ios/Runner/Info.plist
+      # Install the exact dependency versions recorded for this Flutter application.
       - name: Resolve locked dependencies
+        # Treat the following indented lines as a shell script.
         script: |
+          # Run Flutter commands from the folder containing pubspec.yaml.
           cd mobile
+          # Refuse to silently change the committed dependency resolution.
           flutter pub get --enforce-lockfile
+      # Prevent known Dart errors and regression failures from reaching the IPA.
       - name: Analyze and test
+        # Run both checks before generating the client configuration.
         script: |
+          # Select the Flutter package inside this repository.
           cd mobile
+          # Check Dart types, imports, and configured analyzer diagnostics.
           flutter analyze
+          # Run the backend-independent unit and widget regression tests.
           flutter test
+      # Create an ignored build-time client configuration from the environment group.
       - name: Create build configuration
+        # Use Python to serialize JSON rather than manually escaping key/URL strings.
         script: |
+          # Feed the following literal Python program through standard input.
           python3 - <<'PY'
+          # Read environment values and encode them as JSON.
           import json, os
+          # Write the generated file using a platform-safe path helper.
           from pathlib import Path
+          # Select only the public client settings, never a secret/service-role key.
           values = {k: os.environ[k] for k in ['SUPABASE_URL','SUPABASE_PUBLISHABLE_KEY']}
+          # Fail before compilation if either setting is empty.
           assert all(values.values()), 'Set both variables in the chripy environment group'
+          # Store values where the Flutter build command below expects them.
           Path('mobile/config.ci.json').write_text(json.dumps(values))
           PY
+      # Produce a release app for real iPhone hardware, with signing deferred to installation.
       - name: Compile unsigned iPhone release
+        # Compile using the environment values embedded in config.ci.json.
         script: |
+          # Select the generated Flutter iOS project.
           cd mobile
+          # Build a device release without certificates/provisioning on this runner.
           flutter build ios --release --no-codesign --dart-define-from-file=config.ci.json
+      # Package the unsigned .app in the directory structure expected by an IPA.
       - name: Package for Sideloadly
+        # Stage and zip the build without changing the app bundle's contents.
         script: |
+          # Stop on failures, unset variables, or a failed command inside a pipeline.
           set -euo pipefail
+          # Require a successful physical-device build before packaging.
           test -d mobile/build/ios/iphoneos/Runner.app
+          # Use a fresh temporary directory to avoid mixing artifacts from older builds.
           CHRIPY_STAGE="$(mktemp -d)"
+          # An IPA must contain its .app directly inside a Payload directory.
           mkdir -p "$CHRIPY_STAGE/Payload"
+          # Copy the completed device app, preserving its bundle directory structure.
           cp -R mobile/build/ios/iphoneos/Runner.app "$CHRIPY_STAGE/Payload/"
+          # Make Payload the top-level directory in the resulting archive.
           cd "$CHRIPY_STAGE"
+          # Archive recursively and preserve symlinks; installation will supply signing.
           /usr/bin/zip -q -r -y "$CM_BUILD_DIR/chripy-unsigned.ipa" Payload
+    # Publish these build outputs for download from Codemagic.
     artifacts:
+      # Download this IPA for the manual signing/installation step.
       - chripy-unsigned.ipa

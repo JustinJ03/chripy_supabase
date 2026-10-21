@@ -1,5 +1,17 @@
 # Chripy 1.0.0 tutorial package
 
+## Documentation — 21 October 2026
+
+- Added line-by-line explanations to handwritten Dart source/tests, Node setup
+  helpers, SQL migrations/tests, email templates, and the Codemagic workflow.
+- Reworked the root README into repository documentation with an overview,
+  architecture diagram, quick start, configuration, testing, iPhone build steps,
+  and troubleshooting.
+- Preserved the longer original walkthrough in `TUTORIAL.md` and repaired
+  its relative documentation links.
+- Confirmed executable code and workflow behavior are unchanged. Flutter analysis
+  reports no issues, all 11 tests pass, and Node syntax/documentation checks pass.
+
 ## Local fixes — 20 October 2026
 
 - Renamed the repository's `Row` alias to `DataRow` and imported the repository
