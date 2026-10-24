@@ -98,22 +98,13 @@ npm run backend:status
 
 The first start downloads container images and can take several minutes. Use the URLs and client key printed by your CLI. Local startup may apply migrations automatically; `migration up --local` applies any remaining pending migrations. See the [official local-development guide](https://supabase.com/docs/guides/local-development/cli/getting-started) for CLI setup details.
 
-Typical local addresses:
-
-| Service | Default address | Purpose |
-| --- | --- | --- |
-| API | `http://127.0.0.1:54321` | Flutter's backend |
-| Studio | `http://127.0.0.1:54323` | Inspect local tables and storage |
-| Mailpit | `http://127.0.0.1:54324` | Read verification/recovery emails |
-| PostgreSQL | `127.0.0.1:54322` | Local database tools |
-
 ### 4. Configure the app
 
 Edit `mobile/config.local.json` using your local **publishable** key, or the legacy **anon** key if that is what your stack provides:
 
 ```json
 {
-  "SUPABASE_URL": "http://127.0.0.1:54321",
+  "SUPABASE_URL": "CHECK_LOCAL_SUPABASE_ADDRESS",
   "SUPABASE_PUBLISHABLE_KEY": "YOUR_LOCAL_PUBLISHABLE_OR_ANON_KEY"
 }
 ```
